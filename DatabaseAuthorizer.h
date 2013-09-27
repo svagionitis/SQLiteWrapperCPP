@@ -30,7 +30,8 @@
 
 #include <iostream>
 #include <memory>
-#include <hash>
+#include <functional>
+#include <unordered_set>
 
 extern const int SQLAuthAllow;
 extern const int SQLAuthIgnore;
@@ -114,7 +115,7 @@ private:
 
     const std::string m_databaseInfoTableName;
 
-    std::hash<std::string> m_whitelistedFunctions;
+    std::unordered_set<std::string> m_whitelistedFunctions;
 };
 
 #endif // DatabaseAuthorizer_h

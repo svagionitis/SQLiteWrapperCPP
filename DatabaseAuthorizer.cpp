@@ -28,6 +28,7 @@
 
 #include "DatabaseAuthorizer.h"
 
+#include <string.h>
 #include <iostream>
 #include <memory>
 
@@ -60,64 +61,64 @@ void DatabaseAuthorizer::addWhitelistedFunctions()
 {
     // SQLite functions used to help implement some operations
     // ALTER TABLE helpers
-    m_whitelistedFunctions.add("sqlite_rename_table");
-    m_whitelistedFunctions.add("sqlite_rename_trigger");
+    m_whitelistedFunctions.insert("sqlite_rename_table");
+    m_whitelistedFunctions.insert("sqlite_rename_trigger");
     // GLOB helpers
-    m_whitelistedFunctions.add("glob");
+    m_whitelistedFunctions.insert("glob");
 
     // SQLite core functions
-    m_whitelistedFunctions.add("abs");
-    m_whitelistedFunctions.add("changes");
-    m_whitelistedFunctions.add("coalesce");
-    m_whitelistedFunctions.add("glob");
-    m_whitelistedFunctions.add("ifnull");
-    m_whitelistedFunctions.add("hex");
-    m_whitelistedFunctions.add("last_insert_rowid");
-    m_whitelistedFunctions.add("length");
-    m_whitelistedFunctions.add("like");
-    m_whitelistedFunctions.add("lower");
-    m_whitelistedFunctions.add("ltrim");
-    m_whitelistedFunctions.add("max");
-    m_whitelistedFunctions.add("min");
-    m_whitelistedFunctions.add("nullif");
-    m_whitelistedFunctions.add("quote");
-    m_whitelistedFunctions.add("replace");
-    m_whitelistedFunctions.add("round");
-    m_whitelistedFunctions.add("rtrim");
-    m_whitelistedFunctions.add("soundex");
-    m_whitelistedFunctions.add("sqlite_source_id");
-    m_whitelistedFunctions.add("sqlite_version");
-    m_whitelistedFunctions.add("substr");
-    m_whitelistedFunctions.add("total_changes");
-    m_whitelistedFunctions.add("trim");
-    m_whitelistedFunctions.add("typeof");
-    m_whitelistedFunctions.add("upper");
-    m_whitelistedFunctions.add("zeroblob");
+    m_whitelistedFunctions.insert("abs");
+    m_whitelistedFunctions.insert("changes");
+    m_whitelistedFunctions.insert("coalesce");
+    m_whitelistedFunctions.insert("glob");
+    m_whitelistedFunctions.insert("ifnull");
+    m_whitelistedFunctions.insert("hex");
+    m_whitelistedFunctions.insert("last_insert_rowid");
+    m_whitelistedFunctions.insert("length");
+    m_whitelistedFunctions.insert("like");
+    m_whitelistedFunctions.insert("lower");
+    m_whitelistedFunctions.insert("ltrim");
+    m_whitelistedFunctions.insert("max");
+    m_whitelistedFunctions.insert("min");
+    m_whitelistedFunctions.insert("nullif");
+    m_whitelistedFunctions.insert("quote");
+    m_whitelistedFunctions.insert("replace");
+    m_whitelistedFunctions.insert("round");
+    m_whitelistedFunctions.insert("rtrim");
+    m_whitelistedFunctions.insert("soundex");
+    m_whitelistedFunctions.insert("sqlite_source_id");
+    m_whitelistedFunctions.insert("sqlite_version");
+    m_whitelistedFunctions.insert("substr");
+    m_whitelistedFunctions.insert("total_changes");
+    m_whitelistedFunctions.insert("trim");
+    m_whitelistedFunctions.insert("typeof");
+    m_whitelistedFunctions.insert("upper");
+    m_whitelistedFunctions.insert("zeroblob");
 
     // SQLite date and time functions
-    m_whitelistedFunctions.add("date");
-    m_whitelistedFunctions.add("time");
-    m_whitelistedFunctions.add("datetime");
-    m_whitelistedFunctions.add("julianday");
-    m_whitelistedFunctions.add("strftime");
+    m_whitelistedFunctions.insert("date");
+    m_whitelistedFunctions.insert("time");
+    m_whitelistedFunctions.insert("datetime");
+    m_whitelistedFunctions.insert("julianday");
+    m_whitelistedFunctions.insert("strftime");
 
     // SQLite aggregate functions
     // max() and min() are already in the list
-    m_whitelistedFunctions.add("avg");
-    m_whitelistedFunctions.add("count");
-    m_whitelistedFunctions.add("group_concat");
-    m_whitelistedFunctions.add("sum");
-    m_whitelistedFunctions.add("total");
+    m_whitelistedFunctions.insert("avg");
+    m_whitelistedFunctions.insert("count");
+    m_whitelistedFunctions.insert("group_concat");
+    m_whitelistedFunctions.insert("sum");
+    m_whitelistedFunctions.insert("total");
 
     // SQLite FTS functions
-    m_whitelistedFunctions.add("match");
-    m_whitelistedFunctions.add("snippet");
-    m_whitelistedFunctions.add("offsets");
-    m_whitelistedFunctions.add("optimize");
+    m_whitelistedFunctions.insert("match");
+    m_whitelistedFunctions.insert("snippet");
+    m_whitelistedFunctions.insert("offsets");
+    m_whitelistedFunctions.insert("optimize");
 
     // SQLite ICU functions
     // like(), lower() and upper() are already in the list
-    m_whitelistedFunctions.add("regexp");
+    m_whitelistedFunctions.insert("regexp");
 }
 
 int DatabaseAuthorizer::createTable(const std::string& tableName)
@@ -286,7 +287,7 @@ int DatabaseAuthorizer::createVTable(const std::string& tableName, const std::st
         return SQLAuthDeny;
 
     // Allow only the FTS3 extension
-    if (!equalIgnoringCase(moduleName, "fts3"))
+    if (!strcasecmp(moduleName.c_str(), "fts3"))
         return SQLAuthDeny;
 
     m_lastActionChangedDatabase = true;
@@ -299,7 +300,7 @@ int DatabaseAuthorizer::dropVTable(const std::string& tableName, const std::stri
         return SQLAuthDeny;
 
     // Allow only the FTS3 extension
-    if (!equalIgnoringCase(moduleName, "fts3"))
+    if (!strcasecmp(moduleName.c_str(), "fts3"))
         return SQLAuthDeny;
 
     return updateDeletesBasedOnTableName(tableName);
