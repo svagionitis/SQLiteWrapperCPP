@@ -35,11 +35,14 @@
 #include "SQLiteStatement.h"
 #include <inttypes.h>
 #include <sqlite3.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <sstream>
 
 #define D_LOG_DEBUG
 
+#ifndef ASSERT
 #ifndef DEBUG
 #define ASSERT(x)
 #else
@@ -50,6 +53,7 @@
             cout << " on line " << __LINE__  << "\n"; \
             cout << " in file " << __FILE__ << "\n";  \
          }
+#endif
 #endif
 
 SQLiteFileSystem::SQLiteFileSystem()
@@ -109,7 +113,7 @@ bool SQLiteFileSystem::ensureDatabaseFileExists(const std::string& fileName, boo
         return false;
 
     if (checkPathOnly) {
-        String dir = directoryName(fileName);
+        std::string dir = directoryName(fileName);
         return ensureDatabaseDirectoryExists(dir);
     }
 
@@ -139,3 +143,41 @@ std::string SQLiteFileSystem::pathByAppendingComponent(const std::string& path, 
     return path + "/" + component;
 }
 
+bool SQLiteFileSystem::fileExists(const std::string& fileName)
+{
+    std::ifstream ifile(fileName.c_str());
+
+    return ifile.good();
+}
+
+bool SQLiteFileSystem::makeAllDirectories(const std::string& path)
+{
+    size_t pre=0, pos;
+    std::string dir;
+    int mdret;
+    bool out;
+    mode_t mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+
+    if(path[path.size()-1] != '/')
+    {
+        // force trailing / so we can handle everything in loop
+        path += '/';
+    }
+
+    while((pos = path.find_first_of('/',pre)) != std::string::npos)
+    {
+        dir = path.substr(0, pos++);
+        pre = pos;
+        if(dir.size() == 0) continue; // if leading / first time is 0 length
+        if((mdret = mkdir(dir.c_str(), mode)) && errno != EEXIST)
+        {
+            out = !mdret ? true : false;
+            return out;
+        }
+    }
+
+    out = !mdret ? true : false;
+    return out;
+}
+
+}

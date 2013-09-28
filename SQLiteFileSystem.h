@@ -102,7 +102,13 @@ public:
     static long long getDatabaseFileSize(const std::string& fileName);
 
     // Append a component at the end of a path.
-    std::string pathByAppendingComponent(const std::string& path, const std::string& component);
+    static std::string pathByAppendingComponent(const std::string& path, const std::string& component);
+
+    // Check if file exists.
+    static bool fileExists(const std::string& fileName);
+
+    // Create a directory if not exists.
+    static bool makeAllDirectories(const std::string& path);
 
 private:
     // do not instantiate this class

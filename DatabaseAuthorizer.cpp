@@ -373,7 +373,7 @@ int DatabaseAuthorizer::allowDetach(const std::string&)
 
 int DatabaseAuthorizer::allowFunction(const std::string& functionName)
 {
-    if (m_securityEnabled && !m_whitelistedFunctions.contains(functionName.lower()))
+    if (m_securityEnabled && !m_whitelistedFunctions.count(functionName))
         return SQLAuthDeny;
 
     return SQLAuthAllow;
@@ -411,11 +411,12 @@ int DatabaseAuthorizer::denyBasedOnTableName(const std::string& tableName) const
 
     // Sadly, normal creates and drops end up affecting sqlite_master in an authorizer callback, so
     // it will be tough to enforce all of the following policies
+    // equalIgnoringCase == strcasecmp
     //if (equalIgnoringCase(tableName, "sqlite_master") || equalIgnoringCase(tableName, "sqlite_temp_master") ||
     //    equalIgnoringCase(tableName, "sqlite_sequence") || equalIgnoringCase(tableName, Database::databaseInfoTableName()))
     //        return SQLAuthDeny;
 
-    if (equalIgnoringCase(tableName, m_databaseInfoTableName))
+    if (!strcasecmp(tableName.c_str(), m_databaseInfoTableName.c_str()))
         return SQLAuthDeny;
 
     return SQLAuthAllow;

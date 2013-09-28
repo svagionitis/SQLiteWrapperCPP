@@ -31,6 +31,20 @@
 #include <thread>
 #include <mutex>
 
+#ifndef ASSERT
+#ifndef DEBUG
+#define ASSERT(x)
+#else
+#define ASSERT(x) \
+         if (! (x)) \
+         { \
+            std::cout << "ERROR!! Assert " << #x << " failed\n"; \
+            std::cout << " on line " << __LINE__  << "\n"; \
+            std::cout << " in file " << __FILE__ << "\n";  \
+         }
+#endif
+#endif
+
 struct sqlite3;
 
 class DatabaseAuthorizer;
@@ -103,7 +117,7 @@ public:
     const char* lastErrorMsg();
 
     sqlite3* sqlite3Handle() const {
-        ASSERT(m_sharable || currentThread() == m_openingThread || !m_db);
+        ASSERT(m_sharable || std::this_thread::get_id() == m_openingThread || !m_db);
         return m_db;
     }
 

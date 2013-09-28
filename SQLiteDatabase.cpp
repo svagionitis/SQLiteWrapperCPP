@@ -43,9 +43,20 @@
 #define ASSERT(x) \
          if (! (x)) \
          { \
-            cout << "ERROR!! Assert " << #x << " failed\n"; \
-            cout << " on line " << __LINE__  << "\n"; \
-            cout << " in file " << __FILE__ << "\n";  \
+            std::cout << "ERROR!! Assert " << #x << " failed\n"; \
+            std::cout << " on line " << __LINE__  << "\n"; \
+            std::cout << " in file " << __FILE__ << "\n";  \
+         }
+#endif
+
+#ifndef DEBUG
+#define ASSERT_NOT_REACHED()
+#else
+#define ASSERT_NOT_REACHED() \
+         { \
+            std::cout << "Assert not reached\n"; \
+            std::cout << " on line " << __LINE__  << "\n"; \
+            std::cout << " in file " << __FILE__ << "\n";  \
          }
 #endif
 
@@ -125,7 +136,7 @@ void SQLiteDatabase::close()
         sqlite3_close(db);
     }
 
-    m_openingThread = 0;
+    m_openingThread = (std::thread::id)0;
     m_openError = SQLITE_ERROR;
     m_openErrorMessage = std::string();
 }
@@ -138,7 +149,7 @@ void SQLiteDatabase::interrupt()
         if (!m_db)
             return;
         sqlite3_interrupt(m_db);
-        yield();
+        std::this_thread::yield();
     }
 
     m_lockingMutex.unlock();
@@ -448,7 +459,7 @@ int SQLiteDatabase::authorizerFunction(void* userData, int actionCode, const cha
 void SQLiteDatabase::setAuthorizer(std::shared_ptr<DatabaseAuthorizer> auth)
 {
     if (!m_db) {
-        LOG_ERROR("Attempt to set an authorizer on a non-open SQL database");
+        D_LOG_ERROR("Attempt to set an authorizer on a non-open SQL database");
         ASSERT_NOT_REACHED();
         return;
     }
