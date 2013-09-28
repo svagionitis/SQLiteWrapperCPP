@@ -179,5 +179,3 @@ bool SQLiteFileSystem::makeAllDirectories(const std::string& path)
     out = !mdret ? true : false;
     return out;
 }
-
-}
