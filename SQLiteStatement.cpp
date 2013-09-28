@@ -27,6 +27,7 @@
 
 #include "SQLValue.h"
 #include <sqlite3.h>
+#include <strings.h>
 
 #include <thread>
 #include <algorithm>
@@ -321,7 +322,7 @@ bool SQLiteStatement::isColumnDeclaredAsBlob(int col)
             return false;
     }
 
-    return equalIgnoringCase(std::string("BLOB"), std::string(reinterpret_cast<const UChar*>(sqlite3_column_decltype16(m_statement, col))));
+    return !strcasecmp(std::string("BLOB").c_str(), std::string(reinterpret_cast<const UChar*>(sqlite3_column_decltype16(m_statement, col))).c_str()) ? true : false;
 }
 
 std::string SQLiteStatement::getColumnName(int col)
@@ -354,7 +355,7 @@ SQLValue SQLiteStatement::getColumnValue(int col)
         case SQLITE_BLOB:       // SQLValue and JS don't represent blobs, so use TEXT -case
         case SQLITE_TEXT: {
             const UChar* string = reinterpret_cast<const UChar*>(sqlite3_value_text16(value));
-            return SQLValue(std::string(reinterpret_cast<const uint8_t *>(string)));
+            return SQLValue(std::string(string));
         }
         case SQLITE_NULL:
             return SQLValue();
@@ -497,7 +498,7 @@ bool SQLiteStatement::returnTextResults(int col, std::vector<std::string>& v)
         return false;
 
     while (step() == SQLITE_ROW)
-        v.append(getColumnText(col));
+        v.push_back(getColumnText(col));
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
@@ -517,7 +518,7 @@ bool SQLiteStatement::returnIntResults(int col, std::vector<int>& v)
         return false;
 
     while (step() == SQLITE_ROW)
-        v.append(getColumnInt(col));
+        v.push_back(getColumnInt(col));
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
@@ -537,7 +538,7 @@ bool SQLiteStatement::returnInt64Results(int col, std::vector<int64_t>& v)
         return false;
 
     while (step() == SQLITE_ROW)
-        v.append(getColumnInt64(col));
+        v.push_back(getColumnInt64(col));
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
@@ -557,7 +558,7 @@ bool SQLiteStatement::returnDoubleResults(int col, std::vector<double>& v)
         return false;
 
     while (step() == SQLITE_ROW)
-        v.append(getColumnDouble(col));
+        v.push_back(getColumnDouble(col));
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
