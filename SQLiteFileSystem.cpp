@@ -37,7 +37,10 @@
 #include <sqlite3.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
+#include <unistd.h>
 
+#include <fstream>
 #include <sstream>
 
 #define D_LOG_DEBUG
@@ -145,7 +148,7 @@ std::string SQLiteFileSystem::pathByAppendingComponent(const std::string& path, 
 
 bool SQLiteFileSystem::fileExists(const std::string& fileName)
 {
-    std::ifstream ifile(fileName.c_str());
+    std::ifstream ifile(fileName.c_str(), std::ifstream::in);
 
     return ifile.good();
 }
@@ -154,19 +157,20 @@ bool SQLiteFileSystem::makeAllDirectories(const std::string& path)
 {
     size_t pre=0, pos;
     std::string dir;
+    std::string pathModified = path;
     int mdret;
     bool out;
     mode_t mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
 
-    if(path[path.size()-1] != '/')
+    if(pathModified[pathModified.size()-1] != '/')
     {
         // force trailing / so we can handle everything in loop
-        path += '/';
+        pathModified += '/';
     }
 
-    while((pos = path.find_first_of('/',pre)) != std::string::npos)
+    while((pos = pathModified.find_first_of('/',pre)) != std::string::npos)
     {
-        dir = path.substr(0, pos++);
+        dir = pathModified.substr(0, pos++);
         pre = pos;
         if(dir.size() == 0) continue; // if leading / first time is 0 length
         if((mdret = mkdir(dir.c_str(), mode)) && errno != EEXIST)
@@ -179,3 +183,53 @@ bool SQLiteFileSystem::makeAllDirectories(const std::string& path)
     out = !mdret ? true : false;
     return out;
 }
+
+std::string SQLiteFileSystem::directoryName(const std::string& fileName)
+{
+    size_t found;
+
+    found = fileName.find_last_of("/");
+
+    return fileName.substr(0,found);
+}
+
+bool SQLiteFileSystem::deleteEmptyDirectory(const std::string& path)
+{
+    int n = 0;
+    DIR* dp = opendir(path.c_str());
+    struct dirent* ep;
+
+    // Not a directory or error open.
+    if (dp == NULL)
+        return false;
+
+    // Read dir, if it's empty the only
+    // contents will be '.' and '..'.
+    while ((ep = readdir(dp)) != NULL)
+    {
+        if(++n > 2)
+            return false;
+    }
+
+    // Remove dir.
+    closedir(dp);
+    rmdir(path.c_str());
+
+    return true;
+}
+
+bool SQLiteFileSystem::getFileSize(const std::string& fileName, int64_t& size)
+{
+    struct stat fileStats;
+
+    if(stat(fileName.c_str(), &fileStats) != -1)
+        size = reinterpret_cast<int64_t>(&fileStats.st_size);
+
+    return true;
+}
+
+bool SQLiteFileSystem::deleteFile(const std::string& fileName)
+{
+    return !std::remove(fileName.c_str()) ? true : false;
+}
+

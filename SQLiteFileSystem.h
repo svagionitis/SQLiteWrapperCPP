@@ -110,6 +110,18 @@ public:
     // Create a directory if not exists.
     static bool makeAllDirectories(const std::string& path);
 
+    // Get the directory name of a filename
+    static std::string directoryName(const std::string& fileName);
+
+    // Delete directory if empty.
+    static bool deleteEmptyDirectory(const std::string& path);
+
+    // Get the size of file.
+    static bool getFileSize(const std::string& fileName, long long& size);
+
+    // Remove a file.
+    static bool deleteFile(const std::string& fileName);
+
 private:
     // do not instantiate this class
     SQLiteFileSystem();

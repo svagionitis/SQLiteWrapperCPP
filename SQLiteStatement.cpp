@@ -29,10 +29,11 @@
 #include <sqlite3.h>
 
 #include <thread>
+#include <algorithm>
 
 #define D_LOG_DEBUG
 // Unicode char as char
-#define Uchar char
+#define UChar char
 
 #ifndef DEBUG
 #define ASSERT(x)
@@ -41,6 +42,17 @@
          if (! (x)) \
          { \
             std::cout << "ERROR!! Assert " << #x << " failed\n"; \
+            std::cout << " on line " << __LINE__  << "\n"; \
+            std::cout << " in file " << __FILE__ << "\n";  \
+         }
+#endif
+
+#ifndef DEBUG
+#define ASSERT_NOT_REACHED()
+#else
+#define ASSERT_NOT_REACHED() \
+         { \
+            std::cout << "Assert not reached\n"; \
             std::cout << " on line " << __LINE__  << "\n"; \
             std::cout << " in file " << __FILE__ << "\n";  \
          }
@@ -115,11 +127,11 @@ int SQLiteStatement::step()
     // in order to compute properly the lastChanges() return value.
     m_database.updateLastChangesCount();
 
-    D_LOG_DEBUG("SQL - step - %s", m_query.ascii().data());
+    D_LOG_DEBUG("SQL - step - %s", m_query.data());
     int error = sqlite3_step(m_statement);
     if (error != SQLITE_DONE && error != SQLITE_ROW) {
-        D_LOG_DEBUG(SQLDatabase, "sqlite3_step failed (%i)\nQuery - %s\nError - %s",
-            error, m_query.ascii().data(), sqlite3_errmsg(m_database.sqlite3Handle()));
+        D_LOG_DEBUG("sqlite3_step failed (%i)\nQuery - %s\nError - %s",
+            error, m_query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
     }
 
     return error;
@@ -132,7 +144,7 @@ int SQLiteStatement::finalize()
 #endif
     if (!m_statement)
         return SQLITE_OK;
-    D_LOG_DEBUG(SQLDatabase, "SQL - finalize - %s", m_query.ascii().data());
+    D_LOG_DEBUG("SQL - finalize - %s", m_query.data());
     int result = sqlite3_finalize(m_statement);
     m_statement = 0;
     return result;
@@ -143,7 +155,7 @@ int SQLiteStatement::reset()
     ASSERT(m_isPrepared);
     if (!m_statement)
         return SQLITE_OK;
-    D_LOG_DEBUG(SQLDatabase, "SQL - reset - %s", m_query.ascii().data());
+    D_LOG_DEBUG("SQL - reset - %s", m_query.data());
     return sqlite3_reset(m_statement);
 }
 
@@ -458,7 +470,7 @@ const void* SQLiteStatement::getColumnBlob(int col, int& size)
         return 0;
     }
     if (step() != SQLITE_ROW) {
-        D_LOG_DEBUG(SQLDatabase, "Step wasn't a row");
+        D_LOG_DEBUG("Step wasn't a row");
         return 0;
     }
 
@@ -529,7 +541,7 @@ bool SQLiteStatement::returnInt64Results(int col, std::vector<int64_t>& v)
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
-        D_LOG_DEBUG(SQLDatabase, "Error reading results from database query %s", m_query.data());
+        D_LOG_DEBUG("Error reading results from database query %s", m_query.data());
     }
     finalize();
     return result;
@@ -549,7 +561,7 @@ bool SQLiteStatement::returnDoubleResults(int col, std::vector<double>& v)
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
-        D_LOG_DEBUG(SQLDatabase, "Error reading results from database query %s", m_query.data());
+        D_LOG_DEBUG("Error reading results from database query %s", m_query.data());
     }
     finalize();
     return result;
