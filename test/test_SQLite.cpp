@@ -23,6 +23,7 @@ TEST(SQLiteWrapperCPPWebkit, test_create_sqlitedb_file)
     // Open the db, if it doen't exist
     // create it.
     sqliteDB->open(filenameDB, false);
+    ASSERT_TRUE(sqliteDB->isOpen());
 
     // Check if the file was created.
     std::ifstream ifile(filenameDB.c_str());
@@ -30,6 +31,7 @@ TEST(SQLiteWrapperCPPWebkit, test_create_sqlitedb_file)
 
     // Close db file.
     sqliteDB->close();
+    ASSERT_FALSE(sqliteDB->isOpen());
 
     // Remove file.
     std::remove(filenameDB.c_str());
@@ -43,6 +45,7 @@ TEST(SQLiteWrapperCPPWebkit, test_populate_sqlitedb)
     // Open the db, if it doen't exist
     // create it.
     sqliteDB->open(filenameDB, false);
+    ASSERT_TRUE(sqliteDB->isOpen());
 
     // Check if the file was created.
     std::ifstream ifile(filenameDB.c_str());
@@ -59,6 +62,7 @@ TEST(SQLiteWrapperCPPWebkit, test_populate_sqlitedb)
 
     // Close db file.
     sqliteDB->close();
+    ASSERT_FALSE(sqliteDB->isOpen());
 
     // Remove file.
     std::remove(filenameDB.c_str());
