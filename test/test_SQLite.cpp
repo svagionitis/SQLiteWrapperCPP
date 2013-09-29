@@ -1,6 +1,10 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
+TEST(SQLiteWrapperCPPWebkit, test_create_sqlitedb_file)
+{
+}
+
 int main(int argc, char *argv[])
 {
     ::testing::GTEST_FLAG(color) = "yes";

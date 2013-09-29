@@ -37,5 +37,5 @@ target_link_libraries(${TARGET} ${SQLITE3_LIBRARIES} ${GTEST_BOTH_LIBRARIES} pth
 
 set(GTEST_ARGS "--gtest_color=yes ")
 enable_testing()
-add_test(test ${CMAKE_CURRENT_BINARY_DIR}/${TARGET} ${GTEST_ARGS})
+add_test(SQLiteWrapperCPPWebkit ${CMAKE_CURRENT_BINARY_DIR}/${TARGET} ${GTEST_ARGS})
 
