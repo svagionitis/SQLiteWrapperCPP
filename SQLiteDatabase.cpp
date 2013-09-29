@@ -34,8 +34,8 @@
 #include <thread>
 #include <mutex>
 
-#define D_LOG_DEBUG
-#define D_LOG_ERROR
+#define D_LOG_DEBUG printf
+#define D_LOG_ERROR printf
 
 #ifndef DEBUG
 #define ASSERT(x)

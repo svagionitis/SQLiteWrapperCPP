@@ -43,7 +43,7 @@
 #include <fstream>
 #include <sstream>
 
-#define D_LOG_DEBUG
+#define D_LOG_DEBUG printf
 
 #ifndef ASSERT
 #ifndef DEBUG

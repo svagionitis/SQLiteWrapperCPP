@@ -32,7 +32,7 @@
 #include <thread>
 #include <algorithm>
 
-#define D_LOG_DEBUG
+#define D_LOG_DEBUG printf
 // Unicode char as char
 #define UChar char
 
@@ -91,9 +91,9 @@ int SQLiteStatement::prepare()
 
     //CString query = m_query.stripWhiteSpace().utf8();
     std::string query = m_query;
-    query.erase(std::remove_if(query.begin(), query.end(), ::isspace), query.end());
+    //query.erase(std::remove_if(query.begin(), query.end(), ::isspace), query.end());
 
-    D_LOG_DEBUG("SQL - prepare - %s", query.data());
+    D_LOG_DEBUG("SQL - prepare - %s\n", query.data());
 
     // Pass the length of the string including the null character to sqlite3_prepare_v2;
     // this lets SQLite avoid an extra string copy.
@@ -103,7 +103,7 @@ int SQLiteStatement::prepare()
     int error = sqlite3_prepare_v2(m_database.sqlite3Handle(), query.data(), lengthIncludingNullCharacter, &m_statement, &tail);
 
     if (error != SQLITE_OK)
-        D_LOG_DEBUG("sqlite3_prepare16 failed (%i)\n%s\n%s", error, query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
+        D_LOG_DEBUG("sqlite3_prepare16 failed (%i)\n%s\n%s\n", error, query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
 
     if (tail && *tail)
         error = SQLITE_ERROR;
@@ -128,10 +128,10 @@ int SQLiteStatement::step()
     // in order to compute properly the lastChanges() return value.
     m_database.updateLastChangesCount();
 
-    D_LOG_DEBUG("SQL - step - %s", m_query.data());
+    D_LOG_DEBUG("SQL - step - %s\n", m_query.data());
     int error = sqlite3_step(m_statement);
     if (error != SQLITE_DONE && error != SQLITE_ROW) {
-        D_LOG_DEBUG("sqlite3_step failed (%i)\nQuery - %s\nError - %s",
+        D_LOG_DEBUG("sqlite3_step failed (%i)\nQuery - %s\nError - %s\n",
             error, m_query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
     }
 
@@ -145,7 +145,7 @@ int SQLiteStatement::finalize()
 #endif
     if (!m_statement)
         return SQLITE_OK;
-    D_LOG_DEBUG("SQL - finalize - %s", m_query.data());
+    D_LOG_DEBUG("SQL - finalize - %s\n", m_query.data());
     int result = sqlite3_finalize(m_statement);
     m_statement = 0;
     return result;
@@ -156,7 +156,7 @@ int SQLiteStatement::reset()
     ASSERT(m_isPrepared);
     if (!m_statement)
         return SQLITE_OK;
-    D_LOG_DEBUG("SQL - reset - %s", m_query.data());
+    D_LOG_DEBUG("SQL - reset - %s\n", m_query.data());
     return sqlite3_reset(m_statement);
 }
 
