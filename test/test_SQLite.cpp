@@ -12,6 +12,7 @@
 #include <vector>
 #include <cstdio>
 
+#include <time.h>
 #include <sqlite3.h>
 #include "gtest/gtest.h"
 
@@ -68,6 +69,100 @@ TEST(SQLiteWrapperCPPWebkit, test_populate_sqlitedb)
     std::remove(filenameDB.c_str());
 }
 
+TEST(SQLiteWrapperCPPWebkit, test_populate_blob_sqlitedb)
+{
+    const std::string filenameDB("testDB.db");
+    std::shared_ptr<SQLiteDatabase> sqliteDB(new SQLiteDatabase());
+
+    // Open the db, if it doen't exist
+    // create it.
+    sqliteDB->open(filenameDB, false);
+    ASSERT_TRUE(sqliteDB->isOpen());
+
+    // Check if the file was created.
+    std::ifstream ifile(filenameDB.c_str());
+    ASSERT_TRUE(ifile.good());
+
+    // Create a table
+    ASSERT_TRUE(SQLiteStatement(*sqliteDB, std::string("CREATE TABLE user (userID INTEGER NOT NULL PRIMARY KEY, lastName VARCHAR(50) NOT NULL, firstName VARCHAR(50), age INTEGER, weight DOUBLE, data BLOB)")).executeCommand());
+
+
+    time_t now = time(NULL);
+    struct tm *blob = gmtime(&now);
+
+    SQLiteStatement sqliteInsertStmnt(*sqliteDB, std::string("INSERT INTO user (userID, lastName, firstName, age, weight, data) VALUES (1, 'Lehmann', 'Jamie', 20, 65.5, ?)"));
+
+    sqliteInsertStmnt.prepare();
+    sqliteInsertStmnt.bindBlob(1, blob, sizeof(struct tm));
+    sqliteInsertStmnt.step();
+    sqliteInsertStmnt.finalize();
+
+    // Close db file.
+    sqliteDB->close();
+    ASSERT_FALSE(sqliteDB->isOpen());
+
+    // Remove file.
+    std::remove(filenameDB.c_str());
+}
+
+TEST(SQLiteWrapperCPPWebkit, test_statement_prepare_sqlitedb)
+{
+    const std::string filenameDB("testDB.db");
+    std::shared_ptr<SQLiteDatabase> sqliteDB(new SQLiteDatabase());
+
+    // Open the db, if it doen't exist
+    // create it.
+    sqliteDB->open(filenameDB, false);
+    ASSERT_TRUE(sqliteDB->isOpen());
+
+    // Check if the file was created.
+    std::ifstream ifile(filenameDB.c_str());
+    ASSERT_TRUE(ifile.good());
+
+    // Create a table
+    ASSERT_TRUE(SQLiteStatement(*sqliteDB, std::string("CREATE TABLE user (userID INTEGER NOT NULL PRIMARY KEY, lastName VARCHAR(50) NOT NULL, firstName VARCHAR(50), age INTEGER, weight DOUBLE)")).executeCommand());
+
+    // Populate the table created above
+    ASSERT_TRUE(SQLiteStatement(*sqliteDB, std::string("INSERT INTO user (userID, lastName, firstName, age, weight) VALUES (1, 'Lehmann', 'Jamie', 20, 65.5)")).executeCommand());
+    ASSERT_EQ(SQLiteStatement(*sqliteDB, std::string("INSERT INTO user (userID, lastName, firstName, age, weight) VALUES (2, 'Burgdorf', 'Peter', 55, NULL)")).prepare(), SQLITE_OK);
+
+    // Close db file.
+    sqliteDB->close();
+    ASSERT_FALSE(sqliteDB->isOpen());
+
+    // Remove file.
+    std::remove(filenameDB.c_str());
+}
+
+TEST(SQLiteWrapperCPPWebkit, test_statement_step_sqlitedb)
+{
+    const std::string filenameDB("testDB.db");
+    std::shared_ptr<SQLiteDatabase> sqliteDB(new SQLiteDatabase());
+
+    // Open the db, if it doen't exist
+    // create it.
+    sqliteDB->open(filenameDB, false);
+    ASSERT_TRUE(sqliteDB->isOpen());
+
+    // Check if the file was created.
+    std::ifstream ifile(filenameDB.c_str());
+    ASSERT_TRUE(ifile.good());
+
+    // Create a table
+    ASSERT_TRUE(SQLiteStatement(*sqliteDB, std::string("CREATE TABLE user (userID INTEGER NOT NULL PRIMARY KEY, lastName VARCHAR(50) NOT NULL, firstName VARCHAR(50), age INTEGER, weight DOUBLE)")).executeCommand());
+
+    // Populate the table created above
+    ASSERT_TRUE(SQLiteStatement(*sqliteDB, std::string("INSERT INTO user (userID, lastName, firstName, age, weight) VALUES (1, 'Lehmann', 'Jamie', 20, 65.5)")).executeCommand());
+    ASSERT_EQ(SQLiteStatement(*sqliteDB, std::string("INSERT INTO user (userID, lastName, firstName, age, weight) VALUES (2, 'Burgdorf', 'Peter', 55, NULL)")).prepare(), SQLITE_OK);
+    ASSERT_EQ(SQLiteStatement(*sqliteDB, std::string("INSERT INTO user (userID, lastName, firstName, age, weight) VALUES (2, 'Burgdorf', 'Peter', 55, NULL)")).step(), SQLITE_OK);
+
+    // Close db file.
+    sqliteDB->close();
+    ASSERT_FALSE(sqliteDB->isOpen());
+
+    // Remove file.
+    std::remove(filenameDB.c_str());
+}
 
 int main(int argc, char *argv[])
 {
