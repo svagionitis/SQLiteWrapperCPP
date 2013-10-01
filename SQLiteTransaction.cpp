@@ -27,7 +27,7 @@
 
 #include "SQLiteDatabase.h"
 
-#ifndef DEBUG
+#ifndef NDEBUG
 #define ASSERT(x)
 #else
 #define ASSERT(x) \

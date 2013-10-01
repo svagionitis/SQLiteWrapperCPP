@@ -36,7 +36,7 @@
 // Unicode char as char
 #define UChar char
 
-#ifndef DEBUG
+#ifndef NDEBUG
 #define ASSERT(x)
 #else
 #define ASSERT(x) \
@@ -48,7 +48,7 @@
          }
 #endif
 
-#ifndef DEBUG
+#ifndef NDEBUG
 #define ASSERT_NOT_REACHED()
 #else
 #define ASSERT_NOT_REACHED() \

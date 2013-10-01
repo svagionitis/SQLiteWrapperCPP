@@ -46,7 +46,7 @@
 #define D_LOG_DEBUG printf
 
 #ifndef ASSERT
-#ifndef DEBUG
+#ifndef NDEBUG
 #define ASSERT(x)
 #else
 #define ASSERT(x) \

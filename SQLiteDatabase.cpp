@@ -37,7 +37,7 @@
 #define D_LOG_DEBUG printf
 #define D_LOG_ERROR printf
 
-#ifndef DEBUG
+#ifndef NDEBUG
 #define ASSERT(x)
 #else
 #define ASSERT(x) \
@@ -49,7 +49,7 @@
          }
 #endif
 
-#ifndef DEBUG
+#ifndef NDEBUG
 #define ASSERT_NOT_REACHED()
 #else
 #define ASSERT_NOT_REACHED() \
