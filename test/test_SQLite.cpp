@@ -14,7 +14,9 @@
 
 #include <time.h>
 #include <sqlite3.h>
+
 #include "gtest/gtest.h"
+#include "glog/logging.h"
 
 TEST(SQLiteWrapperCPPWebkit, test_create_sqlitedb_file)
 {
