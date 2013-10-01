@@ -83,7 +83,9 @@ SQLiteStatement::~SQLiteStatement()
 
 int SQLiteStatement::prepare()
 {
+#ifndef NDEBUG
     ASSERT(!m_isPrepared);
+#endif
 
     std::lock_guard<std::mutex> lock(m_database.databaseMutex());
     if (m_database.isInterrupted())
@@ -119,7 +121,9 @@ int SQLiteStatement::step()
     std::lock_guard<std::mutex> lock(m_database.databaseMutex());
     if (m_database.isInterrupted())
         return SQLITE_INTERRUPT;
+#ifndef NDEBUG
     //ASSERT(m_isPrepared);
+#endif
 
     if (!m_statement)
         return SQLITE_OK;
@@ -153,7 +157,9 @@ int SQLiteStatement::finalize()
 
 int SQLiteStatement::reset()
 {
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     if (!m_statement)
         return SQLITE_OK;
     D_LOG_DEBUG("SQL - reset - %s\n", m_query.data());
@@ -164,7 +170,9 @@ bool SQLiteStatement::executeCommand()
 {
     if (!m_statement && prepare() != SQLITE_OK)
         return false;
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     if (step() != SQLITE_DONE) {
         finalize();
         return false;
@@ -177,7 +185,9 @@ bool SQLiteStatement::returnsAtLeastOneResult()
 {
     if (!m_statement && prepare() != SQLITE_OK)
         return false;
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     if (step() != SQLITE_ROW) {
         finalize();
         return false;
@@ -189,7 +199,9 @@ bool SQLiteStatement::returnsAtLeastOneResult()
 
 int SQLiteStatement::bindBlob(int index, const void* blob, int size)
 {
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     ASSERT(index > 0);
     ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
     ASSERT(blob);
@@ -218,7 +230,9 @@ int SQLiteStatement::bindBlob(int index, const std::string& text)
 
 int SQLiteStatement::bindText(int index, const std::string& text)
 {
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     ASSERT(index > 0);
     ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
 
@@ -237,7 +251,9 @@ int SQLiteStatement::bindText(int index, const std::string& text)
 
 int SQLiteStatement::bindInt(int index, int integer)
 {
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     ASSERT(index > 0);
     ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
 
@@ -246,7 +262,9 @@ int SQLiteStatement::bindInt(int index, int integer)
 
 int SQLiteStatement::bindInt64(int index, int64_t integer)
 {
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     ASSERT(index > 0);
     ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
 
@@ -255,7 +273,9 @@ int SQLiteStatement::bindInt64(int index, int64_t integer)
 
 int SQLiteStatement::bindDouble(int index, double number)
 {
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     ASSERT(index > 0);
     ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
 
@@ -264,7 +284,9 @@ int SQLiteStatement::bindDouble(int index, double number)
 
 int SQLiteStatement::bindNull(int index)
 {
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     ASSERT(index > 0);
     ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
 
@@ -288,7 +310,9 @@ int SQLiteStatement::bindValue(int index, const SQLValue& value)
 
 unsigned SQLiteStatement::bindParameterCount() const
 {
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     if (!m_statement)
         return 0;
     return sqlite3_bind_parameter_count(m_statement);
@@ -296,7 +320,9 @@ unsigned SQLiteStatement::bindParameterCount() const
 
 int SQLiteStatement::columnCount()
 {
+#ifndef NDEBUG
     ASSERT(m_isPrepared);
+#endif
     if (!m_statement)
         return 0;
     return sqlite3_data_count(m_statement);
