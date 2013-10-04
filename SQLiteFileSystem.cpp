@@ -40,10 +40,10 @@
 #include <dirent.h>
 #include <unistd.h>
 
+#include <glog/logging.h>
+
 #include <fstream>
 #include <sstream>
-
-#define D_LOG_DEBUG printf
 
 #ifndef ASSERT
 #ifndef NDEBUG
@@ -71,17 +71,23 @@ int SQLiteFileSystem::openDatabase(const std::string& filename, sqlite3** databa
 std::string SQLiteFileSystem::getFileNameForNewDatabase(const std::string& dbDir, const std::string&,
                                                         const std::string&, SQLiteDatabase* db)
 {
+    DLOG(INFO) << ">>>";
+
     // try to get the next sequence number from the given database
     // if we can't get a number, return an empty string
     SQLiteStatement sequenceStatement(*db, "SELECT seq FROM sqlite_sequence WHERE name='Databases';");
-    if (sequenceStatement.prepare() != SQLResultOk)
+    if (sequenceStatement.prepare() != SQLResultOk) {
+        DLOG(INFO) << "<<< " << std::string();
         return std::string();
+    }
     int result = sequenceStatement.step();
     int64_t seq = 0;
     if (result == SQLResultRow)
         seq = sequenceStatement.getColumnInt64(0);
-    else if (result != SQLResultDone)
+    else if (result != SQLResultDone) {
+        DLOG(INFO) << "<<< " << std::string();
         return std::string();
+    }
     sequenceStatement.finalize();
 
     // increment the number until we can use it to form a file name that doesn't exist
@@ -95,6 +101,7 @@ std::string SQLiteFileSystem::getFileNameForNewDatabase(const std::string& dbDir
         fileName = pathByAppendingComponent(dbDir, stringStream.str());
     } while (fileExists(fileName));
 
+    DLOG(INFO) << "<<< " << stringStream.str();
     return stringStream.str();
 }
 
@@ -105,21 +112,31 @@ std::string SQLiteFileSystem::appendDatabaseFileNameToPath(const std::string& pa
 
 bool SQLiteFileSystem::ensureDatabaseDirectoryExists(const std::string& path)
 {
-    if (path.empty())
+    DLOG(INFO) << ">>>";
+    if (path.empty()) {
+        DLOG(INFO) << "<<< " << "FALSE";
         return false;
+    }
+
+    DLOG(INFO) << "<<<";
     return makeAllDirectories(path);
 }
 
 bool SQLiteFileSystem::ensureDatabaseFileExists(const std::string& fileName, bool checkPathOnly)
 {
-    if (fileName.empty())
+    DLOG(INFO) << ">>>";
+    if (fileName.empty()) {
+        DLOG(INFO) << "<<< " << "FALSE";
         return false;
+    }
 
     if (checkPathOnly) {
         std::string dir = directoryName(fileName);
+        DLOG(INFO) << "<<<";
         return ensureDatabaseDirectoryExists(dir);
     }
 
+    DLOG(INFO) << "<<<";
     return fileExists(fileName);
 }
 
