@@ -32,6 +32,8 @@
 #include <iostream>
 #include <memory>
 
+#include <glog/logging.h>
+
 std::shared_ptr<DatabaseAuthorizer> DatabaseAuthorizer::create(const std::string& databaseInfoTableName)
 {
     return std::shared_ptr<DatabaseAuthorizer>(new DatabaseAuthorizer(databaseInfoTableName));
@@ -59,6 +61,8 @@ void DatabaseAuthorizer::resetDeletes()
 
 void DatabaseAuthorizer::addWhitelistedFunctions()
 {
+    DLOG(INFO) << "Enter function: " << __func__;
+
     // SQLite functions used to help implement some operations
     // ALTER TABLE helpers
     m_whitelistedFunctions.insert("sqlite_rename_table");
@@ -119,6 +123,8 @@ void DatabaseAuthorizer::addWhitelistedFunctions()
     // SQLite ICU functions
     // like(), lower() and upper() are already in the list
     m_whitelistedFunctions.insert("regexp");
+
+    DLOG(INFO) << "Exit function: " << __func__;
 }
 
 int DatabaseAuthorizer::createTable(const std::string& tableName)
