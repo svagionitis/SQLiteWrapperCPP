@@ -1,112 +1,50 @@
-# - Try to find the Google Glog library
+# Source https://github.com/hanjianwei/cmake-modules/blob/master/FindGlog.cmake
+# - Try to find Glog
 #
-#  This module defines the following variables
+# The following variables are optionally searched for defaults
+# GLOG_ROOT_DIR: Base directory where all GLOG components are found
 #
-#  GLOG_FOUND - Was Glog found
-#  GLOG_INCLUDE_DIRS - the Glog include directories
-#  GLOG_LIBRARIES - Link to this
-#
-#  This module accepts the following variables
-#
-#  GLOG_ROOT - Can be set to Glog install path or Windows build path
-#
-#=============================================================================
-#  FindGlog.cmake, adapted from FindBullet.cmake which has the following
-#  copyright -
-#-----------------------------------------------------------------------------
-# Copyright 2009 Kitware, Inc.
-# Copyright 2009 Philip Lowman <philip@yhbt.com>
-#
-# Distributed under the OSI-approved BSD License (the "License");
-# see accompanying file Copyright.txt for details.
-#
-# This software is distributed WITHOUT ANY WARRANTY; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the License for more information.
-#=============================================================================
-# (To distribute this file outside of CMake, substitute the full
-#  License text for the above reference.)
+# The following are set after configuration is done:
+# GLOG_FOUND
+# GLOG_INCLUDE_DIRS
+# GLOG_LIBRARIES
+# GLOG_LIBRARYRARY_DIRS
 
-if (NOT DEFINED GLOG_ROOT)
-    set (GLOG_ROOT /usr /usr/local /opt/local)
-endif (NOT DEFINED GLOG_ROOT)
+include(FindPackageHandleStandardArgs)
+
+set(GLOG_ROOT_DIR "" CACHE PATH "Folder contains Google glog")
+
+if(WIN32)
+    find_path(GLOG_INCLUDE_DIR glog/logging.h
+        PATHS ${GLOG_ROOT_DIR}/src/windows)
+else()
+    find_path(GLOG_INCLUDE_DIR glog/logging.h
+        PATHS ${GLOG_ROOT_DIR})
+endif()
 
 if(MSVC)
-set(LIB_PATHS ${GLOG_ROOT} ${GLOG_ROOT}/Release)
-else(MSVC)
-set (LIB_PATHS ${GLOG_ROOT} ${GLOG_ROOT}/lib)
-endif(MSVC)
+    find_library(GLOG_LIBRARY_RELEASE libglog_static
+        PATHS ${GLOG_ROOT_DIR}
+        PATH_SUFFIXES Release)
 
-macro(_FIND_GLOG_LIBRARY _var)
-  find_library(${_var}
-     NAMES
-        ${ARGN}
-     PATHS
-		${LIB_PATHS}
-     PATH_SUFFIXES lib
-  )
-  mark_as_advanced(${_var})
-endmacro()
+    find_library(GLOG_LIBRARY_DEBUG libglog_static
+        PATHS ${GLOG_ROOT_DIR}
+        PATH_SUFFIXES Debug)
 
-macro(_GLOG_APPEND_LIBRARIES _list _release)
-   set(_debug ${_release}_DEBUG)
-   if(${_debug})
-      set(${_list} ${${_list}} optimized ${${_release}} debug ${${_debug}})
-   else()
-      set(${_list} ${${_list}} ${${_release}})
-   endif()
-endmacro()
+    set(GLOG_LIBRARY optimized ${GLOG_LIBRARY_RELEASE} debug ${GLOG_LIBRARY_DEBUG})
+else()
+    find_library(GLOG_LIBRARY glog
+        PATHS ${GLOG_ROOT_DIR}
+        PATH_SUFFIXES
+            lib
+            lib64)
+endif()
 
-if(MSVC)
-    find_path(GLOG_INCLUDE_DIR NAMES raw_logging.h
-        PATHS
-		  ${GLOG_ROOT}/src/windows
-          ${GLOG_ROOT}/src/windows/glog
-		  )
-else(MSVC)
-	# Linux/OS X builds
-    find_path(GLOG_INCLUDE_DIR NAMES raw_logging.h
-        PATHS
-          ${GLOG_ROOT}/include/glog
-		  )
-endif(MSVC)
-
-# Find the libraries
-if(MSVC)
-    _FIND_GLOG_LIBRARY(GLOG_LIBRARY		libglog.lib)
-else(MSVC)
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	# OS X build
-	_FIND_GLOG_LIBRARY(GLOG_LIBRARY		libglog.dylib)
-    else()
-	# Linux builds
-	_FIND_GLOG_LIBRARY(GLOG_LIBRARY		libglog.so)
-    endif()
-endif(MSVC)
-
-# handle the QUIETLY and REQUIRED arguments and set GLOG_FOUND to TRUE if 
-# all listed variables are TRUE
-include("${CMAKE_ROOT}/Modules/FindPackageHandleStandardArgs.cmake")
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Glog DEFAULT_MSG
-    GLOG_LIBRARY)
-
-if(MSVC)
-    string(REGEX REPLACE "/glog$" "" VAR_WITHOUT ${GLOG_INCLUDE_DIR})
-    string(REGEX REPLACE "/windows$" "" VAR_WITHOUT ${VAR_WITHOUT})
-    set(GLOG_INCLUDE_DIRS ${GLOG_INCLUDE_DIRS} "${VAR_WITHOUT}")
-    string(REGEX REPLACE "/libglog.lib" "" GLOG_LIBRARY_DIR ${GLOG_LIBRARY})
-else(MSVC)
-    set(GLOG_INCLUDE_DIRS ${GLOG_INCLUDE_DIR})
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	# OS X build
-	string(REGEX REPLACE "/libglog.dylib" "" GLOG_LIBRARY_DIR ${GLOG_LIBRARY})
-    else()
-	# Linux build
-	string(REGEX REPLACE "/libglog.so" "" GLOG_LIBRARY_DIR ${GLOG_LIBRARY})
-    endif()
-endif(MSVC)
+find_package_handle_standard_args(GLOG DEFAULT_MSG
+    GLOG_INCLUDE_DIR GLOG_LIBRARY)
 
 if(GLOG_FOUND)
-#   _GLOG_APPEND_LIBRARIES(GLOG GLOG_LIBRARY)
+    set(GLOG_INCLUDE_DIRS ${GLOG_INCLUDE_DIR})
+    set(GLOG_LIBRARIES ${GLOG_LIBRARY})
 endif()
 
