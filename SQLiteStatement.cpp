@@ -84,13 +84,17 @@ SQLiteStatement::~SQLiteStatement()
 
 int SQLiteStatement::prepare()
 {
+    DLOG(INFO) << __func__ << " >>>";
 #ifndef NDEBUG
     ASSERT(!m_isPrepared);
 #endif
 
     std::lock_guard<std::mutex> lock(m_database.databaseMutex());
     if (m_database.isInterrupted())
+    {
+        DLOG(INFO) << __func__ << " <<< " << "SQLITE_INTERRUPT";
         return SQLITE_INTERRUPT;
+    }
 
     //CString query = m_query.stripWhiteSpace().utf8();
     std::string query = m_query;
@@ -114,20 +118,28 @@ int SQLiteStatement::prepare()
 #ifndef NDEBUG
     m_isPrepared = error == SQLITE_OK;
 #endif
+    DLOG(INFO) << __func__ << " <<< " << ((error == SQLITE_OK) ? "OK" : "ERROR");
     return error;
 }
 
 int SQLiteStatement::step()
 {
+    DLOG(INFO) << __func__ << " >>>";
     std::lock_guard<std::mutex> lock(m_database.databaseMutex());
     if (m_database.isInterrupted())
+    {
+        DLOG(INFO) << __func__ << " <<< " << "SQLITE_INTERRUPT";
         return SQLITE_INTERRUPT;
+    }
 #ifndef NDEBUG
     //ASSERT(m_isPrepared);
 #endif
 
     if (!m_statement)
+    {
+        DLOG(INFO) << __func__ << " <<< " << "SQLITE_OK";
         return SQLITE_OK;
+    }
 
     // The database needs to update its last changes count before each statement
     // in order to compute properly the lastChanges() return value.
@@ -139,19 +151,25 @@ int SQLiteStatement::step()
         LOG(ERROR) << "sqlite3_step failed (" << error << ")\nQuery - " << m_query.data() << "\nError - " << sqlite3_errmsg(m_database.sqlite3Handle());
     }
 
+    DLOG(INFO) << __func__ << " <<< " << ((error == SQLITE_OK) ? "OK" : "ERROR");
     return error;
 }
 
 int SQLiteStatement::finalize()
 {
+    DLOG(INFO) << __func__ << " >>>";
 #ifndef NDEBUG
     m_isPrepared = false;
 #endif
     if (!m_statement)
+    {
+        DLOG(INFO) << __func__ << " <<< " << "SQLITE_OK";
         return SQLITE_OK;
+    }
     DLOG(INFO) << "SQL - finalize - " << m_query.data();
     int result = sqlite3_finalize(m_statement);
     m_statement = 0;
+    DLOG(INFO) << __func__ << " <<< " << "result=" << result;
     return result;
 }
 
